@@ -1,0 +1,8 @@
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - "jwk-subtle"
+  - "pbkdf-subtle"
+  - "eslint-config-two-stroke"
+trustPolicy: no-downgrade
+ignoreScripts: true
+blockExoticSubdeps: true

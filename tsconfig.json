@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "erasableSyntaxOnly": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "types": [
+      "./worker-configuration.d.ts",
+      "vitest/globals",
+      "@cloudflare/vitest-pool-workers/types"
+    ],
+    "verbatimModuleSyntax": true,
+    "jsx": "react-jsx"
+  },
+  "exclude": ["../../dist"]
+}
