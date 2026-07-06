@@ -9,7 +9,7 @@
     "type-check": "./bin/type-check.mjs"
   },
   "dependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.16.20",
+    "@cloudflare/vitest-pool-workers": "^0.18.0",
     "@sentry/cli": "^3.5.1",
     "@types/node": "^26.0.1",
     "@types/react": "^19.2.17",
