@@ -6,5 +6,6 @@ import { cmd } from "../src/cmd.mjs";
 if (fs.existsSync("wrangler.jsonc")) {
   cmd("wrangler types --env-file /dev/null --strict-vars false");
 }
+cmd("react-router typegen");
 cmd("vite build");
 cmd("tsc --noEmit");
