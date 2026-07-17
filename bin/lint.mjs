@@ -3,9 +3,8 @@
 import fs from "fs";
 import { cmd } from "../src/cmd.mjs";
 
-cmd("react-router typegen");
 if (fs.existsSync("wrangler.jsonc")) {
   cmd("wrangler types --env-file /dev/null --strict-vars false --check");
 }
-cmd("eslint --cache --max-warnings=0");
-cmd("prettier --cache --check .");
+cmd("oxfmt --check");
+cmd("oxlint");

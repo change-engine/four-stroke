@@ -1,7 +1,7 @@
-export type Viewer = {
+export interface Viewer {
   name: string;
   picture: string | null;
-};
+}
 
 export const getCookieValue = (request: Request, name: string): string | null => {
   const cookieHeader = request.headers.get("Cookie");
@@ -32,6 +32,7 @@ export const parseViewerFromAccessToken = (accessToken: string): Viewer | null =
   }
 
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const claims = JSON.parse(decodeBase64Url(payload)) as {
       email?: unknown;
       name?: unknown;

@@ -1,9 +1,9 @@
 import type { Viewer } from "../util/auth";
 
-type ViewerMenuProps = {
+interface ViewerMenuProps {
   logoutUrl: string;
   viewer: Viewer;
-};
+}
 
 export default function ViewerMenu({ logoutUrl, viewer }: ViewerMenuProps): React.ReactNode {
   return (
