@@ -20,5 +20,5 @@
     "verbatimModuleSyntax": true,
     "jsx": "react-jsx"
   },
-  "exclude": ["../../dist"]
+  "exclude": ["../../dist", "oxfmt.config.ts", "oxlint.config.ts"]
 }

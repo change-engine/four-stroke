@@ -53,13 +53,17 @@ export default defineConfig({
     "no-anonymous-default-export": "off",
     "no-continue": "off",
     "init-declarations": "off",
-    "prefer-to-be-truthy": "off",
+    "vitest/prefer-to-be-truthy": "off",
+    "vitest/prefer-to-be-falsy": "off",
     "vitest/prefer-expect-assertions": "off",
     "vitest/prefer-importing-vitest-globals": "off",
     "vitest/no-importing-vitest-globals": "error",
     "vitest/require-top-level-describe": "off",
     "vitest/max-expects": "off",
     "vitest/no-hooks": "off",
+    "unicorn/number-literal-case": "off",
+    "eslint/one-var": "off",
+    "vitest/prefer-called-once": "off",
   },
   overrides: [
     {
