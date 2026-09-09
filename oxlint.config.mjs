@@ -1,7 +1,7 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "vitest"],
+  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "vitest", "react"],
   options: {
     typeAware: true,
   },
@@ -64,6 +64,15 @@ export default defineConfig({
     "unicorn/number-literal-case": "off",
     "eslint/one-var": "off",
     "vitest/prefer-called-once": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-max-depth": "off",
+    "react/function-component-definition": [
+      "error",
+      {
+        namedComponents: "arrow-function",
+        unnamedComponents: "arrow-function",
+      },
+    ],
   },
   overrides: [
     {
