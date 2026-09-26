@@ -8,4 +8,4 @@ if (fs.existsSync("wrangler.jsonc")) {
 }
 cmd("react-router typegen");
 cmd("oxfmt --check");
-cmd("oxlint");
+cmd("oxlint --report-unused-disable-directives-severity=warn");

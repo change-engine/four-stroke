@@ -64,6 +64,16 @@ export default defineConfig({
     "unicorn/number-literal-case": "off",
     "eslint/one-var": "off",
     "vitest/prefer-called-once": "off",
+    // Judge a wrapped comment by its first line, so the second can carry on the sentence.
+    "capitalized-comments": ["warn", "always", { ignoreConsecutiveComments: true }],
+    // Assertion helpers are `assert` or named `expect…` (`expectRedirect`), so it
+    // can see them; anything left over really asserts nothing.
+    "vitest/expect-expect": ["warn", { assertFunctionNames: ["expect", "expect*", "assert"] }],
+    // Route tests are titled by the request they make: "GET /thing", not "gET /thing".
+    "vitest/prefer-lowercase-title": [
+      "warn",
+      { allowedPrefixes: ["GET", "POST", "PUT", "DELETE", "PATCH", "JWT"] },
+    ],
     "react/react-in-jsx-scope": "off",
     "react/jsx-max-depth": "off",
     "react/function-component-definition": [
@@ -79,6 +89,9 @@ export default defineConfig({
       files: ["*.test.ts", "*.spec.ts"],
       rules: {
         "@typescript-eslint/no-explicit-any": "off",
+        // A helper belongs next to the only test that uses it; hoisting it to module
+        // scope saves nothing in a test run and puts it out of sight.
+        "unicorn/consistent-function-scoping": "off",
       },
     },
     {
