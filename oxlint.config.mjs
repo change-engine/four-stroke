@@ -1,17 +1,19 @@
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "vitest", "react"],
+  plugins: ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "react"],
   options: {
     typeAware: true,
   },
   categories: {
     correctness: "error",
-    suspicious: "warn",
+    suspicious: "error",
     perf: "error",
-    style: "warn",
+    style: "error",
   },
   rules: {
+    // Judge a wrapped comment by its first line, so the second can carry on the sentence.
+    "capitalized-comments": ["error", "always", { ignoreConsecutiveComments: true }],
     "no-map-spread": "off",
     "no-named-export": "off",
     "no-magic-numbers": "off",
@@ -22,7 +24,6 @@ export default defineConfig({
     "sort-keys": "off",
     curly: "off",
     "switch-case-braces": "off",
-    "vitest/require-hook": "off",
     "no-ternary": "off",
     "group-exports": "off",
     "exports-last": "off",
@@ -30,7 +31,6 @@ export default defineConfig({
     "no-null": "off",
     "consistent-type-specifier-style": "off",
     "max-statements": "off",
-    "consistent-type-imports": "error",
     "relative-url-style": ["error", "always"],
     "no-namespace": "off",
     "no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
@@ -53,45 +53,75 @@ export default defineConfig({
     "no-anonymous-default-export": "off",
     "no-continue": "off",
     "init-declarations": "off",
-    "vitest/prefer-to-be-truthy": "off",
-    "vitest/prefer-to-be-falsy": "off",
-    "vitest/prefer-expect-assertions": "off",
-    "vitest/prefer-importing-vitest-globals": "off",
-    "vitest/no-importing-vitest-globals": "error",
-    "vitest/require-top-level-describe": "off",
-    "vitest/max-expects": "off",
-    "vitest/no-hooks": "off",
     "unicorn/number-literal-case": "off",
     "eslint/one-var": "off",
-    "vitest/prefer-called-once": "off",
-    // Judge a wrapped comment by its first line, so the second can carry on the sentence.
-    "capitalized-comments": ["warn", "always", { ignoreConsecutiveComments: true }],
-    // Assertion helpers are `assert` or named `expect…` (`expectRedirect`), so it
-    // can see them; anything left over really asserts nothing.
-    "vitest/expect-expect": ["warn", { assertFunctionNames: ["expect", "expect*", "assert"] }],
-    // Route tests are titled by the request they make: "GET /thing", not "gET /thing".
-    "vitest/prefer-lowercase-title": [
-      "warn",
-      { allowedPrefixes: ["GET", "POST", "PUT", "DELETE", "PATCH", "JWT"] },
-    ],
-    "react/react-in-jsx-scope": "off",
-    "react/jsx-max-depth": "off",
+    // A ternary only reads better when both branches fit on one line.
+    "unicorn/prefer-ternary": ["error", "only-single-line"],
+    "unicorn/prefer-spread": "off", // Upstream bug
+    // Positional capture groups are used throughout; naming them all would
+    // reindex every `match[n]` consumer for no functional gain.
+    "eslint/prefer-named-capture-group": "off",
+    // Stylesheets can only be pulled in for their side effects.
+    "import/no-unassigned-import": ["error", { allow: ["**/*.css", "**/*.scss"] }],
+    "react/jsx-max-depth": ["error", { max: 4 }],
+    "react/react-in-jsx-scope": "off", // Automatic JSX runtime (tsconfig `jsx: react-jsx`)
     "react/function-component-definition": [
       "error",
-      {
-        namedComponents: "arrow-function",
-        unnamedComponents: "arrow-function",
-      },
+      { namedComponents: "arrow-function", unnamedComponents: "arrow-function" },
     ],
   },
   overrides: [
     {
-      files: ["*.test.ts", "*.spec.ts"],
+      // Mocks and page factories are test code too, and use vitest.
+      files: [
+        "*.test.ts",
+        "*.test.tsx",
+        "*.spec.ts",
+        "*.spec.tsx",
+        "e2e/**",
+        "**/__mocks__/**",
+        "**/__factories__/**",
+      ],
+      plugins: ["vitest"],
       rules: {
-        "@typescript-eslint/no-explicit-any": "off",
+        "vitest/require-hook": "off",
+        "vitest/prefer-to-be-truthy": "off",
+        "vitest/prefer-to-be-falsy": "off",
+        "vitest/prefer-expect-assertions": "off",
+        "vitest/prefer-importing-vitest-globals": "off",
+        "vitest/prefer-describe-function-title": "off",
+        "vitest/require-top-level-describe": "off",
+        "vitest/max-expects": "off",
+        "vitest/no-hooks": "off",
+        "vitest/prefer-called-once": "off",
+        // `toEqual` ignores keys written as `undefined`; `toStrictEqual` does not. Fixtures
+        // spell those out on purpose, so the fix changes what a test asserts.
+        "vitest/prefer-strict-equal": "off",
+        // `vi.mock(import("x"))` does not type-check against vi.mock's overloads.
+        "vitest/prefer-import-in-mock": "off",
+        // A mock standing in for a whole module would restate that module's signatures.
+        "vitest/require-mock-type-parameters": "off",
+        // Assertion helpers are named `expect…` or `assert…` (`expectRedirect`), or are
+        // page-object methods that wrap expect(), so it can see them; anything left over
+        // really asserts nothing.
+        "vitest/expect-expect": [
+          "error",
+          { assertFunctionNames: ["expect*", "assert*", "page.expect*", "page.*Present"] },
+        ],
+        "vitest/prefer-lowercase-title": "off",
+        // Tests stash a method to restore it after stubbing. It is never called, so
+        // `this` never matters.
+        "unbound-method": "off",
         // A helper belongs next to the only test that uses it; hoisting it to module
         // scope saves nothing in a test run and puts it out of sight.
         "unicorn/consistent-function-scoping": "off",
+        "vitest/no-conditional-expect": "off",
+        "vitest/prefer-called-with": "off",
+        "prefer-arrow-callback": "off",
+        "vitest/consistent-vitest-vi": "off", // Upstream bug
+        "vitest/consistent-test-filename": "off",
+        // UI steps, polling and findBy queries are sequential by design.
+        "eslint/no-await-in-loop": "off",
       },
     },
     {
@@ -100,13 +130,10 @@ export default defineConfig({
         "no-unused-vars": "off",
         "@typescript-eslint/no-redundant-type-constituents": "off",
         "@typescript-eslint/no-duplicate-type-constituents": "off",
-        "group-exports": "off",
-        "exports-last": "off",
-        "consistent-indexed-object-style": "off",
       },
     },
     {
-      files: ["bin/*.mjs", "src/cmd.mjs"],
+      files: ["bin/*.mjs", "src/cmd.mjs", "src/openapi-typescript.mjs"],
       rules: {
         "import/no-nodejs-modules": "off",
         "prefer-destructuring": "off",

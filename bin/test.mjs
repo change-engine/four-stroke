@@ -3,6 +3,7 @@
 import { cmd } from "../src/cmd.mjs";
 
 cmd("vitest", [
+  "--passWithNoTests",
   ...(!process.argv.slice(2).includes("-w") && !process.argv.slice(2).includes("--watch")
     ? ["--run"]
     : []),
