@@ -1,8 +1,8 @@
-// Every data request is rewritten by `/auth-service-worker.js`, which the dashboard worker
-// Serves for every app on the hostname. A request the worker does not see goes to
-// Https://data.changeengine.com itself and is refused by CORS. A page is uncontrolled on
-// The first visit in a browser, while the worker is still installing, and after a hard
-// Reload, so data requests wait here until the worker controls the page.
+// For apps whose data requests only work once a service worker at `/auth-service-worker.js`
+// Has rewritten them, adding credentials for example. A page is uncontrolled on the first
+// Visit in a browser, while the worker is still installing, and after a hard reload, and
+// Its requests then bypass the worker; these helpers make them wait until it controls the
+// Page. The worker should call `clients.claim()` on `activate` and on a `CLAIM_MESSAGE`.
 
 export const SERVICE_WORKER_URL = "/auth-service-worker.js",
   CLAIM_MESSAGE = "claim",
@@ -19,8 +19,8 @@ export interface WorkerContainer {
 /**
  * Resolves true once a service worker controls the page, or false when none does within
  * `timeoutMs`, so a browser without service workers fails its requests rather than
- * hanging. Registering is idempotent, which lets an app on the hostname that is not the
- * hub get the worker without depending on the hub having been visited first.
+ * hanging. Registering is idempotent, so every app sharing the worker's scope can call
+ * this without knowing whether another app registered it first.
  */
 export const whenControlled = async (
   container: WorkerContainer | undefined,
@@ -57,7 +57,7 @@ export const whenControlled = async (
 
 let controlled: Promise<boolean> | null = null;
 
-/** `fetch` for the PostgREST clients: waits once per page for the worker, then fetches. */
+/** A drop-in `fetch` that waits once per page for the worker, then fetches. */
 export const controlledFetch: typeof fetch = async (input, init) => {
   controlled ??= whenControlled(
     typeof navigator === "undefined" ? undefined : navigator.serviceWorker,
