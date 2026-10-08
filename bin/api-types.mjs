@@ -5,18 +5,20 @@ import fs from "node:fs";
 import { format } from "oxfmt";
 import openapiTS from "../src/openapi-typescript.mjs";
 
-const services = process.argv[2].split(",");
+const services = process.argv[2]?.split(",");
+if (!services) throw new Error("Usage: api-types <origin>[,<origin>...]");
 
 const UUID = ts.factory.createTypeReferenceNode(ts.factory.createIdentifier("UUID"));
 const NULL = ts.factory.createLiteralTypeNode(ts.factory.createNull());
 
+/** @param {import("@typescript/typescript6").Node} node */
 const isEmpty = (node) =>
   ts.isTypeAliasDeclaration(node) &&
   ts.isTypeReferenceNode(node.type) &&
   ts.isIdentifier(node.type.typeName) &&
   node.type.typeName.text === "Record" &&
   node.type.typeArguments?.length === 2 &&
-  node.type.typeArguments[1].kind === ts.SyntaxKind.NeverKeyword;
+  node.type.typeArguments[1]?.kind === ts.SyntaxKind.NeverKeyword;
 
 await Promise.all(
   services.map(async (service) => {

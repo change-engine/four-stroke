@@ -1,13 +1,14 @@
 import { spawnSync } from "child_process";
 
+/**
+ * @param {string} program
+ * @param {string[]} [args]
+ */
 export function cmd(program, args = []) {
-  const { error, status } = spawnSync(
-    program.split(" ")[0],
-    [...program.split(" ").slice(1), ...args],
-    {
-      stdio: "inherit",
-    },
-  );
+  const [executable = "", ...programArgs] = program.split(" ");
+  const { error, status } = spawnSync(executable, [...programArgs, ...args], {
+    stdio: "inherit",
+  });
   if (status) process.exit(status);
   if (error) throw error;
 }
