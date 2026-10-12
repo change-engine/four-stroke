@@ -17,7 +17,7 @@
     "types": [
       "./worker-configuration.d.ts",
       "vitest/globals",
-      "@cloudflare/vitest-pool-workers/types",
+      "@cloudflare/vitest-plugin/types",
       "@types/react"
     ],
     "verbatimModuleSyntax": true,
