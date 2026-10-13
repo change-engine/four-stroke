@@ -1,3 +1,5 @@
+import { TRUSTED_TYPES_POLICY } from "../util/service-worker";
+
 /** Sources an app adds to the base policy, by directive: `{ "connect-src": ["https://api.example.com"] }`. */
 export type Sources = Readonly<Record<string, readonly string[]>>;
 
@@ -6,7 +8,10 @@ export type Sources = Readonly<Record<string, readonly string[]>>;
  * Plus the sources that app adds.
  *
  * Scripts run by nonce alone, and 'strict-dynamic' passes that trust to the modules they
- * Import, so no host list has to follow where a bundle lives. Everything else is the app's
+ * Import, so no host list has to follow where a bundle lives. Trusted Types close the other
+ * way in: every sink that can run code (`innerHTML`, a script's `src`, a worker's address)
+ * refuses a plain string, and takes only what a policy named here made. An app names the
+ * policies it creates, `{ "trusted-types": ["dompurify"] }`. Everything else is the app's
  * Own origin until the app says otherwise. Each directive an app is likely to extend lists
  * 'self' itself, because a directive replaces `default-src` rather than adding to it.
  *
@@ -33,6 +38,8 @@ export const contentSecurityPolicy = (
     "base-uri": ["'none'"],
     "form-action": ["'self'"],
     "frame-ancestors": ["'none'"],
+    "require-trusted-types-for": ["'script'"],
+    "trusted-types": [TRUSTED_TYPES_POLICY],
   };
 
   for (const [directive, added] of Object.entries(sources))
