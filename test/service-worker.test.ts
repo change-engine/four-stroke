@@ -1,6 +1,11 @@
-import { CLAIM_MESSAGE, SERVICE_WORKER_URL, whenControlled } from "../src/util/service-worker";
+import {
+  CLAIM_MESSAGE,
+  SERVICE_WORKER_URL,
+  createWorkerURL,
+  whenControlled,
+} from "../src/util/service-worker";
 
-import type { WorkerContainer } from "../src/util/service-worker";
+import type { TrustedTypePolicyFactory, WorkerContainer } from "../src/util/service-worker";
 
 interface FakeContainer extends WorkerContainer {
   controller: unknown;
@@ -75,5 +80,37 @@ describe("waiting for the auth service worker", () => {
   it("gives up at once when registration is refused or unsupported", async () => {
     await expect(whenControlled(fakeContainer({ registerFails: true }))).resolves.toBe(false);
     await expect(whenControlled(undefined)).resolves.toBe(false);
+  });
+});
+
+describe("the worker's address under Trusted Types", () => {
+  // A stand-in for the browser's factory, marking what its policies make.
+  let created: string[], rules: Parameters<TrustedTypePolicyFactory["createPolicy"]>[1] | undefined;
+  const factory: TrustedTypePolicyFactory = {
+    createPolicy: (name, given) => {
+      created.push(name);
+      rules = given;
+      return { createScriptURL: (url) => `trusted ${given.createScriptURL(url)}` };
+    },
+  };
+
+  beforeEach(() => {
+    created = [];
+    rules = undefined;
+  });
+
+  it("is made by the four-stroke policy", () => {
+    const workerURL = createWorkerURL(factory);
+    expect(created).toEqual(["four-stroke"]);
+    expect(workerURL()).toBe(`trusted ${SERVICE_WORKER_URL}`);
+  });
+
+  it("is the only address the policy will make", () => {
+    createWorkerURL(factory);
+    expect(() => rules?.createScriptURL("https://example.com/worker.js")).toThrow(TypeError);
+  });
+
+  it("is the plain string in a browser without Trusted Types", () => {
+    expect(createWorkerURL(undefined)()).toBe(SERVICE_WORKER_URL);
   });
 });

@@ -27,6 +27,13 @@ describe("the base policy", () => {
     expect(dev.get("connect-src")).toEqual(["'self'", "ws://localhost:*"]);
   });
 
+  it("requires Trusted Types, from four-stroke's policy alone, in dev too", () => {
+    for (const policy of [built, dev]) {
+      expect(policy.get("require-trusted-types-for")).toEqual(["'script'"]);
+      expect(policy.get("trusted-types")).toEqual(["four-stroke"]);
+    }
+  });
+
   it("refuses framing, plugins and a rewritten base", () => {
     expect(built.get("frame-ancestors")).toEqual(["'none'"]);
     expect(built.get("object-src")).toEqual(["'none'"]);
@@ -41,6 +48,7 @@ describe("an app's sources", () => {
         "connect-src": ["https://api.example.com"],
         "script-src": ["https://cdn.example.com"],
         "style-src-attr": ["'unsafe-inline'"],
+        "trusted-types": ["dompurify"],
       },
     }),
   );
@@ -55,6 +63,11 @@ describe("an app's sources", () => {
       "'strict-dynamic'",
       "https://cdn.example.com",
     ]);
+  });
+
+  it("can name more Trusted Types policies, but not lift the requirement", () => {
+    expect(policy.get("trusted-types")).toEqual(["four-stroke", "dompurify"]);
+    expect(policy.get("require-trusted-types-for")).toEqual(["'script'"]);
   });
 
   it("can name a directive the base leaves out", () => {

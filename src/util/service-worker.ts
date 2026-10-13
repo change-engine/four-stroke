@@ -8,6 +8,42 @@ export const SERVICE_WORKER_URL = "/auth-service-worker.js",
   CLAIM_MESSAGE = "claim",
   CONTROL_TIMEOUT_MS = 10_000;
 
+// The Trusted Types policy four-stroke creates, which every app's CSP names. The worker's
+// Address is the only thing it vouches for.
+export const TRUSTED_TYPES_POLICY = "four-stroke";
+
+/**
+ * A browser's `trustedTypes`, as far as this needs it. A TrustedScriptURL is typed as the
+ * string it was made from: the DOM's types know no Trusted Types, and every sink that
+ * takes one takes that string in a browser without them.
+ */
+export interface TrustedTypePolicyFactory {
+  createPolicy: (
+    name: string,
+    rules: { createScriptURL: (url: string) => string },
+  ) => { createScriptURL: (url: string) => string };
+}
+
+/**
+ * The worker's address as `register` must have it. Under `require-trusted-types-for
+ * 'script'` a browser refuses a plain string there, and only a policy the CSP names can
+ * make a TrustedScriptURL; this one makes the worker's and throws on anything else. A
+ * browser without Trusted Types takes the string. Built once per page, because a policy
+ * name can be created only once.
+ */
+export const createWorkerURL = (factory: TrustedTypePolicyFactory | undefined): (() => string) => {
+  if (!factory) return () => SERVICE_WORKER_URL;
+  const policy = factory.createPolicy(TRUSTED_TYPES_POLICY, {
+    createScriptURL: (url) => {
+      if (url !== SERVICE_WORKER_URL) throw new TypeError(`${TRUSTED_TYPES_POLICY}: ${url}`);
+      return url;
+    },
+  });
+  return () => policy.createScriptURL(SERVICE_WORKER_URL);
+};
+
+let workerURL: (() => string) | null = null;
+
 export interface WorkerContainer {
   readonly controller: unknown;
   readonly ready: Promise<{ readonly active: { postMessage: (message: unknown) => void } | null }>;
@@ -38,7 +74,11 @@ export const whenControlled = async (
       timer = setTimeout(() => resolve(false), timeoutMs);
     }),
     claimed = (async () => {
-      await container.register(SERVICE_WORKER_URL, { type: "module" });
+      workerURL ??= createWorkerURL(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- the DOM's types have no Trusted Types; a browser without them leaves this undefined
+        (globalThis as { trustedTypes?: TrustedTypePolicyFactory }).trustedTypes,
+      );
+      await container.register(workerURL(), { type: "module" });
       const registration = await container.ready;
       if (container.controller) return true;
       // An active worker claims pages only when it activates, so one that was already
