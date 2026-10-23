@@ -35,7 +35,7 @@
     "@cloudflare/vitest-plugin": "^1.4.0",
     "@types/react-dom": "^19.3.0",
     "knip": "^6.41.0",
-    "oxfmt": "^0.73.0",
+    "oxfmt": "^0.74.0",
     "oxlint": "^1.87.0",
     "oxlint-tsgolint": "^7.0.2004",
     "react": "^19.3.0",
